@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.env
+
+# Dados reais — não versionar
+data/pdfs/
+data/exports/
+*.db
+!data/.gitkeep
+
+# Config com segredos
+config/config.yaml
+config/credentials.json
+config/token.json
+
+# Logs
+logs/
+*.log
+
+# Frontend build
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+*.swp
+Thumbs.db

@@ -1,0 +1,35 @@
+# Scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+tenacity>=8.2.0
+
+# PDF Processing
+pdfplumber>=0.10.0
+pytesseract>=0.3.10
+Pillow>=10.0.0
+pdf2image>=1.16.0
+
+# AI Classification
+anthropic>=0.39.0
+
+# API Server
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+
+# Export
+openpyxl>=3.1.0
+pandas>=2.1.0
+
+# Configuration
+pyyaml>=6.0.0
+
+# Google Drive / Sheets (opcional)
+google-api-python-client>=2.100.0
+google-auth-httplib2>=0.1.1
+google-auth-oauthlib>=1.1.0
+
+# Utilities
+tqdm>=4.66.0
+schedule>=1.2.0

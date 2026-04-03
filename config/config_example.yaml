@@ -1,0 +1,54 @@
+# ================================================================
+# JurisIntel v2 — Sistema de Inteligência Jurisprudencial TJ-SP
+# Copie para config/config.yaml e preencha com seus dados
+# ================================================================
+
+# --- API Anthropic (Claude) --- OBRIGATÓRIO -----------------------
+anthropic:
+  api_key: "sk-ant-..."            # Chave da API Anthropic
+  model: "claude-sonnet-4-6"       # Melhor custo/benefício para classificação
+  max_tokens: 4096
+
+# --- Banco de Dados -----------------------------------------------
+database:
+  path: "data/jurisprudencia.db"
+
+# --- Scraper ------------------------------------------------------
+scraper:
+  delay_min_segundos: 2            # Respeito ao ESAJ — mínimo 2s
+  delay_max_segundos: 5
+  max_retries: 3
+  timeout_segundos: 30
+  pdf_dir: "data/pdfs"
+  user_agent: "JurisprudenciaBot/2.0 (pesquisa-juridica; contato: seu@email.com)"
+
+# --- Bot Evolutivo ------------------------------------------------
+bot:
+  paginas_por_termo: 15            # Páginas coletadas por termo por ciclo
+  max_pdfs_por_ciclo: 100
+  max_ia_por_ciclo: 50
+  max_termos_por_ciclo: 5
+  ciclos_sem_novos_para_desativar: 3  # Desativa termo improdutivo após N ciclos
+
+# --- API Server ---------------------------------------------------
+api:
+  host: "0.0.0.0"
+  port: 8000
+
+# --- Exportações --------------------------------------------------
+exports:
+  output_dir: "data/exports"
+
+# --- Google Drive (opcional) --------------------------------------
+google_drive:
+  credentials_path: "config/credentials.json"
+  token_path: "config/token.json"
+
+# --- Google Sheets (opcional) ------------------------------------
+google_sheets:
+  spreadsheet_id: null             # Preencha após criar a planilha
+
+# --- Logging ------------------------------------------------------
+logging:
+  level: "INFO"                    # DEBUG | INFO | WARNING | ERROR
+  log_dir: "logs"
