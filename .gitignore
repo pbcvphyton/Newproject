@@ -32,3 +32,7 @@ frontend/dist/
 .DS_Store
 *.swp
 Thumbs.db
+
+# eyescan: binários baixáveis e build gerado
+eyescan/assets/
+eyescan/dist/
