@@ -308,6 +308,15 @@ async function initEngine(){
     boot('pronto ✓ ('+delegateUsed+')');
     engineDot.classList.add('ready'); engineTxt.textContent = 'motor pronto · '+delegateUsed;
     btnStart.disabled = false; btnPhoto.disabled = false;
+
+    /* painel embutido sem permissão de câmera? avise antes mesmo do clique */
+    try{
+      const embedded = window.self !== window.top;
+      if (embedded && document.featurePolicy && !document.featurePolicy.allowsFeature('camera')){
+        boot('Este painel embutido não repassa a câmera — abra em uma aba própria ↓');
+        showOpenTab();
+      }
+    }catch(_){ /* cross-origin: sem como saber; o clique tratará */ }
   }catch(e){
     console.error(e);
     boot('FALHA ao iniciar o motor: '+(e && (e.message||e)), true);
@@ -340,10 +349,35 @@ async function startCamera(){
     resetSmoothing();
     requestAnimationFrame(loop);
   }catch(e){
-    boot('câmera indisponível: '+e.name+' — '+e.message, true);
-    boot('use “Analisar foto…” como alternativa.', true);
     welcome.style.display = 'flex';
+    const embedded = (() => { try { return window.self !== window.top; } catch(_){ return true; } })();
+    if (e.name === 'NotAllowedError' && embedded){
+      boot('A câmera foi bloqueada pelo painel embutido (iframe sem permissão de câmera).', true);
+      boot('Abra o app em uma aba própria do navegador e tente novamente ↓');
+      showOpenTab();
+    } else if (e.name === 'NotAllowedError'){
+      boot('Permissão de câmera negada pelo navegador.', true);
+      boot('Clique no ícone de cadeado/câmera na barra de endereço, marque “Permitir câmera” e recarregue a página.');
+    } else if (e.name === 'NotFoundError'){
+      boot('Nenhuma câmera encontrada neste aparelho.', true);
+      boot('Use “Analisar foto…” como alternativa.');
+    } else {
+      boot('câmera indisponível: '+e.name+' — '+e.message, true);
+      boot('use “Analisar foto…” como alternativa.');
+    }
   }
+}
+
+function showOpenTab(){
+  if ($('btnNewTab')) return;
+  const b = document.createElement('button');
+  b.id = 'btnNewTab'; b.className = 'primary';
+  b.textContent = 'Abrir em nova aba ↗';
+  b.onclick = () => {
+    const w = window.open(location.href, '_blank');
+    if (!w) boot('O navegador bloqueou a nova aba — copie o endereço desta página e cole em uma aba nova.', true);
+  };
+  btnStart.parentElement.insertBefore(b, btnStart);
 }
 
 function stopCamera(){
