@@ -1,125 +1,258 @@
-<title>Periocular — Triagem Visual</title>
+<title>Periocular⁺ — Leitura clínica do olhar</title>
 <style>
-  :root{
-    --bg:#0A0F13; --surface:#111922; --surface2:#0E141B; --line:#1E2B36;
-    --ink:#E9F1F4; --muted:#8FA6B3; --faint:#5C7280;
-    --accent:#43C6D8; --accent-dim:#2A8D9B;
-    --ok:#46C08A; --warn:#E3B23C; --alert:#E2604F;
-    font-size:16px;
-  }
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
-  *{box-sizing:border-box}
+/*__FONTS_CSS__*/
 
-  header{display:flex;align-items:center;gap:.9rem;padding:.7rem 1.1rem;
-    border-bottom:1px solid var(--line);background:var(--surface2)}
-  .wordmark{font-weight:700;letter-spacing:.14em;font-size:.95rem}
-  .wordmark .plus{color:var(--accent)}
-  .tagline{color:var(--muted);font-size:.78rem;letter-spacing:.02em}
-  .spacer{flex:1}
-  .engine{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:.45rem;
-    border:1px solid var(--line);border-radius:999px;padding:.28rem .7rem;white-space:nowrap}
-  .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--warn);flex:none}
-  .dot.ready{background:var(--ok)} .dot.err{background:var(--alert)}
+:root{
+  --bg:#070B0E; --bg2:#0A1116;
+  --glass:rgba(15,23,30,.72); --glass2:rgba(18,28,36,.55);
+  --line:#1B2933; --line2:#24363F;
+  --ink:#EDF4F6; --muted:#93A8B4; --faint:#5E7480;
+  --accent:#6EE3F0; --accent2:#0E7C8C; --accent-soft:rgba(110,227,240,.12);
+  --ok:#4ADE97; --warn:#F2C14E; --alert:#F0655E;
+  --r-lg:1.1rem; --r-md:.8rem; --r-sm:.55rem;
+  font-size:16px;
+}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+::selection{background:rgba(110,227,240,.25)}
 
-  main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0;
-    height:calc(100vh - 53px);height:calc(100dvh - 53px)}
-  @media(max-width:900px){
-    main{grid-template-columns:1fr;height:auto}
-    #panel{max-height:none}
-  }
+/* ---------------- header ---------------- */
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:1rem;
+  padding:.65rem 1.2rem;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(7,11,14,.92), rgba(7,11,14,.78));
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:baseline;gap:.15rem;text-decoration:none;color:var(--ink)}
+.brand .name{font-family:'Instrument Serif',serif;font-size:1.45rem;letter-spacing:.01em}
+.brand sup{color:var(--accent);font-family:'Geist Mono',monospace;font-weight:600;
+  font-size:.8rem;transform:translateY(-.35rem)}
+.tagline{color:var(--faint);font-size:.75rem;letter-spacing:.04em;
+  border-left:1px solid var(--line2);padding-left:1rem}
+.spacer{flex:1}
+.engine{font-family:'Geist Mono',monospace;font-size:.68rem;color:var(--muted);
+  display:flex;align-items:center;gap:.5rem;border:1px solid var(--line2);
+  border-radius:999px;padding:.32rem .8rem;white-space:nowrap;background:var(--glass2)}
+.dot{width:.45rem;height:.45rem;border-radius:50%;background:var(--warn);flex:none;
+  box-shadow:0 0 8px 1px rgba(242,193,78,.55);transition:background .3s, box-shadow .3s}
+.dot.ready{background:var(--ok);box-shadow:0 0 8px 1px rgba(74,222,151,.55)}
+.dot.err{background:var(--alert);box-shadow:0 0 8px 1px rgba(240,101,94,.55)}
+@media(max-width:700px){.tagline{display:none}}
 
-  /* ---------- stage ---------- */
-  #stage{position:relative;background:#050708;overflow:hidden;display:flex;
-    align-items:center;justify-content:center;min-height:46vh}
-  #video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
-    transform:scaleX(-1);display:none}
-  #video.unmirrored{transform:none}
-  #overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
-    pointer-events:none}
-  #photoCanvas{display:none}
+/* ---------------- layout ---------------- */
+main{display:grid;grid-template-columns:minmax(0,1fr) 372px;
+  height:calc(100vh - 57px);height:calc(100dvh - 57px)}
+@media(max-width:960px){main{grid-template-columns:1fr;height:auto}}
 
-  #stageMsg{position:absolute;left:50%;top:14%;transform:translateX(-50%);
-    background:rgba(10,15,19,.82);border:1px solid var(--line);border-radius:.6rem;
-    padding:.5rem .95rem;font-size:.85rem;color:var(--ink);max-width:88%;text-align:center;
-    backdrop-filter:blur(4px);transition:opacity .25s;white-space:pre-line}
-  #stageMsg.hidden{opacity:0}
+/* ---------------- stage ---------------- */
+#stage{position:relative;margin:1rem;border-radius:var(--r-lg);overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #0C161D 0%, #060A0D 70%);
+  border:1px solid var(--line);min-height:52vh;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 24px 60px -28px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.02)}
+@media(max-width:960px){#stage{min-height:62vh;margin-bottom:0}}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  transform:scaleX(-1);display:none}
+#overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+#photoCanvas{display:none}
 
-  #welcome{position:absolute;inset:0;display:flex;flex-direction:column;gap:1.1rem;
-    align-items:center;justify-content:center;padding:2rem;text-align:center;
-    background:radial-gradient(ellipse at 50% 35%, #0E1A20 0%, #050708 75%)}
-  #welcome h1{font-size:1.35rem;font-weight:650;margin:0;letter-spacing:.02em;text-wrap:balance}
-  #welcome p{color:var(--muted);max-width:34rem;margin:0;font-size:.9rem;line-height:1.55}
-  #welcome .eyemark{width:120px;height:64px;opacity:.9}
+/* cantoneiras AR */
+.corners{position:absolute;inset:14px;pointer-events:none;opacity:.5;transition:opacity .4s}
+.corners i{position:absolute;width:26px;height:26px;border:1.5px solid var(--accent);opacity:.55}
+.corners i:nth-child(1){top:0;left:0;border-right:none;border-bottom:none;border-radius:8px 0 0 0}
+.corners i:nth-child(2){top:0;right:0;border-left:none;border-bottom:none;border-radius:0 8px 0 0}
+.corners i:nth-child(3){bottom:0;left:0;border-right:none;border-top:none;border-radius:0 0 0 8px}
+.corners i:nth-child(4){bottom:0;right:0;border-left:none;border-top:none;border-radius:0 0 8px 0}
 
-  .controls{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);
-    display:flex;gap:.55rem;flex-wrap:wrap;justify-content:center;z-index:3}
-  button{font:inherit;cursor:pointer;border-radius:.55rem;border:1px solid var(--line);
-    background:var(--surface);color:var(--ink);padding:.55rem 1.05rem;font-size:.86rem;
-    transition:border-color .15s, background .15s}
-  button:hover{border-color:var(--accent-dim)}
-  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  button.primary{background:var(--accent);border-color:var(--accent);color:#04252B;font-weight:650}
-  button.primary:hover{background:#5AD3E3}
-  button[disabled]{opacity:.45;cursor:not-allowed}
-  button.active{border-color:var(--accent);color:var(--accent)}
+/* mira de alinhamento facial */
+#guide{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+  width:clamp(190px,34%,44vh);aspect-ratio:3/3.9;border-radius:50%;
+  border:1.5px dashed rgba(147,168,180,.55);pointer-events:none;
+  transition:border-color .35s, box-shadow .35s, opacity .5s;
+  animation:breathe 3.2s ease-in-out infinite}
+#guide.ok{border-color:var(--accent);border-style:solid;
+  box-shadow:0 0 0 1px rgba(110,227,240,.18), 0 0 42px -6px rgba(110,227,240,.35);
+  animation:none}
+#guide.gone{opacity:0;animation:none}
+#guide[hidden]{display:none}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(147,168,180,0)}
+  50%{box-shadow:0 0 26px -4px rgba(147,168,180,.25)}}
 
-  .layer-toggles{position:absolute;top:.8rem;right:.8rem;display:flex;gap:.4rem;z-index:3}
-  .layer-toggles button{padding:.32rem .68rem;font-size:.74rem;border-radius:999px;
-    background:rgba(17,25,34,.85)}
+/* selo de estabilidade */
+#stab{position:absolute;top:.9rem;left:50%;transform:translateX(-50%);z-index:4;
+  display:flex;align-items:center;gap:.5rem;padding:.35rem .75rem .35rem .45rem;
+  border-radius:999px;background:var(--glass);border:1px solid var(--line2);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  font-family:'Geist Mono',monospace;font-size:.68rem;color:var(--muted);
+  transition:border-color .3s, color .3s}
+#stab[hidden]{display:none}
+#stab svg{width:1.15rem;height:1.15rem;transform:rotate(-90deg)}
+#stab .track{stroke:var(--line2)}
+#stab .fill{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .25s, stroke .3s}
+#stab.done{color:var(--ok);border-color:rgba(74,222,151,.4)}
+#stab.done .fill{stroke:var(--ok)}
 
-  /* ---------- panel ---------- */
-  #panel{background:var(--surface2);border-left:1px solid var(--line);
-    overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:1rem}
-  @media(max-width:900px){#panel{border-left:none;border-top:1px solid var(--line)}}
+/* toast de orientação */
+#stageMsg{position:absolute;left:50%;bottom:5.4rem;transform:translateX(-50%);z-index:4;
+  background:var(--glass);border:1px solid var(--line2);border-radius:var(--r-md);
+  padding:.6rem 1rem;font-size:.84rem;max-width:min(88%,30rem);text-align:center;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);white-space:pre-line;
+  box-shadow:0 12px 32px -12px rgba(0,0,0,.6);
+  transition:opacity .3s, transform .3s}
+#stageMsg.hidden{opacity:0;transform:translateX(-50%) translateY(6px);pointer-events:none}
 
-  .panel-h{font-size:.7rem;letter-spacing:.16em;color:var(--faint);
-    text-transform:uppercase;margin:0 0 .55rem}
-  .eyes{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
-  .eyecard{background:var(--surface);border:1px solid var(--line);border-radius:.7rem;
-    padding:.75rem .8rem}
-  .eyecard h3{margin:0 0 .55rem;font-size:.8rem;display:flex;align-items:baseline;gap:.45rem}
-  .eyecard h3 small{color:var(--faint);font-weight:400;font-size:.68rem}
-  .mrow{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;
-    padding:.28rem 0;border-top:1px solid var(--line);font-size:.78rem}
-  .mrow:first-of-type{border-top:none}
-  .mrow .lbl{color:var(--muted);flex:1;min-width:0}
-  .mrow .val{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
-  .mrow .val.ok{color:var(--ok)} .mrow .val.warn{color:var(--warn)}
-  .mrow .val.alert{color:var(--alert)} .mrow .val.na{color:var(--faint);font-weight:400}
+/* ---------------- hero / boas-vindas ---------------- */
+#welcome{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;gap:1.05rem;
+  align-items:center;justify-content:center;padding:2rem 1.5rem;text-align:center;
+  background:
+    radial-gradient(90% 70% at 50% 30%, rgba(14,124,140,.14) 0%, transparent 60%),
+    radial-gradient(120% 90% at 50% 0%, #0C161D 0%, #060A0D 75%)}
+#welcome .mark{width:132px;height:74px}
+#welcome .mark .draw{stroke-dasharray:340;stroke-dashoffset:340;
+  animation:draw 1.4s cubic-bezier(.6,0,.2,1) .15s forwards}
+#welcome .mark .iris-ring{transform-origin:66px 37px;animation:spin 26s linear infinite}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+#welcome h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(1.7rem,4.2vw,2.5rem);
+  margin:0;letter-spacing:.005em;text-wrap:balance;line-height:1.12}
+#welcome h1 em{font-style:italic;color:var(--accent)}
+#welcome .sub{color:var(--muted);max-width:36rem;margin:0;font-size:.92rem;line-height:1.6}
+.feat{display:flex;gap:.45rem;flex-wrap:wrap;justify-content:center}
+.feat span{font-family:'Geist Mono',monospace;font-size:.66rem;color:var(--muted);
+  letter-spacing:.05em;border:1px solid var(--line2);border-radius:999px;
+  padding:.3rem .75rem;background:var(--glass2)}
+#bootwrap{display:flex;flex-direction:column;gap:.5rem;align-items:center;min-height:3.4rem}
+#bootbar{width:min(300px,70vw);height:2px;border-radius:2px;background:var(--line);overflow:hidden}
+#bootbar i{display:block;height:100%;width:0%;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent2),var(--accent));
+  transition:width .5s cubic-bezier(.3,0,.2,1)}
+#bootlog{font-family:'Geist Mono',monospace;font-size:.7rem;color:var(--faint);
+  white-space:pre-wrap;max-width:34rem;margin:0;line-height:1.65}
+#bootlog .err{color:var(--alert)}
+.cta{display:flex;gap:.65rem;flex-wrap:wrap;justify-content:center;align-items:center}
+.local-note{font-size:.7rem;color:var(--faint);margin:0}
 
-  .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.6rem}
-  .chip{font-size:.68rem;border-radius:999px;padding:.18rem .6rem;border:1px solid}
-  .chip.ok{color:var(--ok);border-color:var(--ok)}
-  .chip.warn{color:var(--warn);border-color:var(--warn)}
-  .chip.alert{color:var(--alert);border-color:var(--alert)}
+/* ---------------- botões ---------------- */
+.btn{font:inherit;font-size:.86rem;font-weight:500;cursor:pointer;color:var(--ink);
+  border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--glass2);
+  padding:.6rem 1.15rem;display:inline-flex;align-items:center;gap:.5rem;
+  text-decoration:none;line-height:1;
+  transition:transform .12s, border-color .18s, background .18s, box-shadow .18s;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.btn:hover{border-color:var(--accent2);transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.97)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+.btn.primary{background:linear-gradient(135deg,#59D7E6,#22A7BC);border-color:transparent;
+  color:#03272E;font-weight:600;
+  box-shadow:0 8px 24px -10px rgba(110,227,240,.55), inset 0 1px 0 rgba(255,255,255,.25)}
+.btn.primary:hover{box-shadow:0 10px 30px -10px rgba(110,227,240,.75)}
+.btn.ghost{background:transparent}
+.btn svg{width:1rem;height:1rem;flex:none}
 
-  #impressao{background:var(--surface);border:1px solid var(--line);border-radius:.7rem;
-    padding:.85rem .9rem;font-size:.83rem;line-height:1.55;color:var(--ink)}
-  #impressao ul{margin:.3rem 0 0;padding-left:1.1rem}
-  #impressao li{margin:.3rem 0}
-  #impressao .none{color:var(--muted)}
+/* dock flutuante */
+#dock{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:5;
+  display:flex;gap:.35rem;padding:.35rem;border-radius:999px;
+  background:var(--glass);border:1px solid var(--line2);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 16px 40px -16px rgba(0,0,0,.7)}
+#dock[hidden]{display:none}
+#dock .btn{border:none;background:transparent;border-radius:999px;padding:.55rem 1rem;
+  font-size:.8rem;backdrop-filter:none;-webkit-backdrop-filter:none}
+#dock .btn:hover{background:var(--accent-soft);transform:none}
+#dock .btn:active{transform:scale(.96)}
+#dock .btn.armed{background:var(--accent-soft);color:var(--accent)}
 
-  #quality{font-size:.74rem;color:var(--muted);line-height:1.6}
-  #quality b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+/* seletor de camadas */
+#layerBar{position:absolute;top:.9rem;right:.9rem;z-index:5;display:flex;padding:.22rem;
+  border-radius:999px;background:var(--glass);border:1px solid var(--line2);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+#layerBar[hidden]{display:none}
+#layerBar button{font:inherit;font-size:.72rem;font-weight:500;color:var(--muted);
+  border:none;background:transparent;border-radius:999px;padding:.34rem .8rem;cursor:pointer;
+  transition:color .18s, background .18s}
+#layerBar button:hover{color:var(--ink)}
+#layerBar button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#layerBar button.active{color:var(--accent);background:var(--accent-soft)}
 
-  details{background:var(--surface);border:1px solid var(--line);border-radius:.7rem;
-    padding:.7rem .9rem;font-size:.79rem;color:var(--muted);line-height:1.55}
-  details summary{cursor:pointer;color:var(--ink);font-size:.8rem;font-weight:600}
-  details dt{color:var(--ink);font-weight:600;margin-top:.6rem}
-  details dd{margin:0.15rem 0 0 0}
+/* ---------------- painel ---------------- */
+#panel{overflow-y:auto;padding:1rem 1rem 1.4rem .2rem;display:flex;flex-direction:column;gap:.9rem}
+@media(max-width:960px){#panel{padding:1rem}}
+.panel-h{font-family:'Geist Mono',monospace;font-size:.64rem;letter-spacing:.18em;
+  color:var(--faint);text-transform:uppercase;margin:0 0 .5rem .2rem}
+.card{background:linear-gradient(180deg,var(--glass),var(--glass2));
+  border:1px solid var(--line);border-radius:var(--r-lg);padding:.9rem 1rem;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 
-  .disclaimer{border:1px solid var(--warn);border-radius:.7rem;padding:.7rem .9rem;
-    font-size:.74rem;line-height:1.5;color:var(--warn);background:rgba(227,178,60,.06)}
+.eyes{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+@media(max-width:420px){.eyes{grid-template-columns:1fr}}
+.eyecard h3{margin:0 0 .6rem;font-size:.9rem;display:flex;align-items:baseline;gap:.45rem}
+.eyecard h3 .eye-id{font-family:'Geist Mono',monospace;color:var(--accent);font-weight:600}
+.eyecard h3 small{color:var(--faint);font-weight:400;font-size:.66rem}
 
-  #bootlog{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;
-    color:var(--muted);white-space:pre-wrap;max-width:34rem}
-  #bootlog .err{color:var(--alert)}
+.mrow{padding:.42rem 0 .5rem;border-top:1px solid var(--line)}
+.mrow:first-of-type{border-top:none;padding-top:.1rem}
+.mtop{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;margin-bottom:.32rem}
+.mtop .lbl{color:var(--muted);font-size:.73rem}
+.mtop .val{font-family:'Geist Mono',monospace;font-size:.86rem;font-weight:600;
+  font-variant-numeric:tabular-nums;white-space:nowrap;transition:color .3s}
+.mtop .val small{color:var(--faint);font-weight:500;font-size:.66rem;margin-left:.1rem}
+.val.ok{color:var(--ok)} .val.warn{color:var(--warn)} .val.alert{color:var(--alert)}
+.val.na{color:var(--faint);font-weight:500}
+
+.gauge{position:relative;height:4px;border-radius:4px;overflow:visible;opacity:.9}
+.gauge .track{position:absolute;inset:0;border-radius:4px;opacity:.34}
+.gauge .needle{position:absolute;top:50%;width:9px;height:9px;border-radius:50%;
+  background:var(--ink);border:1.5px solid var(--bg);
+  transform:translate(-50%,-50%);left:0%;
+  box-shadow:0 0 0 1.5px rgba(237,244,246,.35), 0 1px 6px rgba(0,0,0,.6);
+  transition:left .5s cubic-bezier(.3,.9,.3,1.1), opacity .3s}
+.gauge .needle.off{opacity:0}
+
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.65rem;min-height:1.1rem}
+.chip{display:inline-flex;align-items:center;gap:.38rem;font-size:.68rem;font-weight:500;
+  border-radius:999px;padding:.24rem .68rem;border:1px solid;animation:rise .35s both}
+.chip::before{content:'';width:.4rem;height:.4rem;border-radius:50%;background:currentColor}
+.chip.ok{color:var(--ok);border-color:rgba(74,222,151,.45);background:rgba(74,222,151,.07)}
+.chip.warn{color:var(--warn);border-color:rgba(242,193,78,.45);background:rgba(242,193,78,.07)}
+.chip.alert{color:var(--alert);border-color:rgba(240,101,94,.5);background:rgba(240,101,94,.08)}
+
+#impressao{font-size:.84rem;line-height:1.6}
+#impressao .none{color:var(--faint)}
+#impressao ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.55rem}
+#impressao li{position:relative;padding-left:1.05rem;animation:rise .4s both;
+  animation-delay:calc(var(--i)*70ms)}
+#impressao li::before{content:'';position:absolute;left:0;top:.48em;width:.42rem;height:.42rem;
+  border-radius:50%;background:var(--sev,var(--accent))}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+#quality{font-family:'Geist Mono',monospace;font-size:.68rem;color:var(--muted);line-height:2}
+#quality b{color:var(--ink);font-weight:600}
+#quality .qwarn{color:var(--warn)}
+
+details.card summary{cursor:pointer;font-size:.84rem;font-weight:600;color:var(--ink)}
+details.card summary::marker{color:var(--accent)}
+details.card{font-size:.8rem;color:var(--muted);line-height:1.6}
+details.card dt{color:var(--ink);font-weight:600;margin-top:.65rem}
+details.card dd{margin:.15rem 0 0}
+
+.disclaimer{border:1px solid rgba(242,193,78,.4);border-radius:var(--r-lg);
+  padding:.75rem .95rem;font-size:.73rem;line-height:1.55;color:var(--warn);
+  background:rgba(242,193,78,.05)}
+
+#copyUrl{font-family:'Geist Mono',monospace;font-size:.7rem;color:var(--muted);
+  max-width:34rem;word-break:break-all;user-select:all;border:1px dashed var(--line2);
+  border-radius:var(--r-sm);padding:.5rem .7rem;margin:0;background:var(--glass2)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001s !important;transition-duration:.001s !important}
+}
 </style>
 
 <header>
-  <span class="wordmark">PERIOCULAR<span class="plus">+</span></span>
-  <span class="tagline">triagem visual de ptose &amp; dermatocalásio · protótipo educacional</span>
+  <span class="brand"><span class="name">Periocular</span><sup>+</sup></span>
+  <span class="tagline">triagem visual de ptose &amp; dermatocalásio — protótipo educacional</span>
   <span class="spacer"></span>
   <span class="engine"><span class="dot" id="engineDot"></span><span id="engineTxt">carregando motor…</span></span>
 </header>
@@ -130,39 +263,68 @@
     <canvas id="overlay"></canvas>
     <canvas id="photoCanvas"></canvas>
 
-    <div id="welcome">
-      <svg class="eyemark" viewBox="0 0 120 64" fill="none" aria-hidden="true">
-        <path d="M6 32 C28 6 92 6 114 32 C92 58 28 58 6 32 Z" stroke="#43C6D8" stroke-width="2"/>
-        <circle cx="60" cy="32" r="13" stroke="#43C6D8" stroke-width="2"/>
-        <circle cx="60" cy="32" r="4.5" fill="#43C6D8"/>
-        <path d="M18 32 C38 14 82 14 102 32" stroke="#2A8D9B" stroke-width="1.4" stroke-dasharray="4 4"/>
+    <div class="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div id="guide" hidden></div>
+
+    <div id="stab" hidden>
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <circle class="track" cx="10" cy="10" r="8" fill="none" stroke-width="2.5"/>
+        <circle class="fill" cx="10" cy="10" r="8" fill="none" stroke-width="2.5"
+          stroke-dasharray="50.27" stroke-dashoffset="50.27"/>
       </svg>
-      <h1>Análise periocular pela câmera</h1>
-      <p>O app localiza seus olhos com uma malha facial de 478 pontos, usa o diâmetro
-      da sua íris como régua anatômica (≈ 11,7 mm) e mede, em milímetros, os principais
-      índices usados na avaliação de <strong>ptose palpebral</strong> e de candidatura à
-      <strong>blefaroplastia</strong> — pintando cada achado sobre a imagem.</p>
-      <p id="bootlog">preparando…</p>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center">
-        <button class="primary" id="btnStart" disabled>Ativar câmera</button>
-        <button id="btnPhoto" disabled>Analisar foto…</button>
+      <span id="stabTxt">consolidando…</span>
+    </div>
+
+    <div id="welcome">
+      <svg class="mark" viewBox="0 0 132 74" fill="none" aria-hidden="true">
+        <path class="draw" d="M8 37 C32 8 100 8 124 37 C100 66 32 66 8 37 Z"
+          stroke="#6EE3F0" stroke-width="1.8"/>
+        <circle class="iris-ring" cx="66" cy="37" r="14.5" stroke="#6EE3F0" stroke-width="1.6"
+          stroke-dasharray="6.5 4.5"/>
+        <circle cx="66" cy="37" r="5" fill="#6EE3F0"/>
+        <path d="M22 37 C44 17 88 17 110 37" stroke="#0E7C8C" stroke-width="1.2" stroke-dasharray="3 5"/>
+      </svg>
+      <h1>A leitura <em>clínica</em> do seu olhar</h1>
+      <p class="sub">Uma malha facial de 478 pontos localiza seus olhos, a íris vira régua
+      anatômica (≈ 11,7 mm) e os índices usados na avaliação de <strong>ptose</strong> e de
+      candidatura à <strong>blefaroplastia</strong> são medidos em milímetros — e pintados,
+      ao vivo, sobre a imagem.</p>
+      <div class="feat">
+        <span>478 PONTOS + ÍRIS</span><span>MILÍMETROS REAIS</span><span>100% LOCAL</span>
       </div>
-      <p style="font-size:.72rem;color:var(--faint)">Nada sai do seu aparelho: todo o
-      processamento acontece localmente, nesta página.</p>
+      <div id="bootwrap">
+        <div id="bootbar"><i id="bootfill"></i></div>
+        <p id="bootlog">preparando…</p>
+      </div>
+      <div class="cta">
+        <button class="btn primary" id="btnStart" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Ativar câmera</button>
+        <button class="btn ghost" id="btnPhoto" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          Analisar foto…</button>
+      </div>
+      <p class="local-note">Nada sai do seu aparelho — todo o processamento acontece nesta página.</p>
     </div>
 
     <div id="stageMsg" class="hidden"></div>
 
-    <div class="layer-toggles" hidden id="layerBar">
-      <button id="tglAreas" class="active" title="Pintura das áreas (dobra/excesso de pele)">Áreas</button>
-      <button id="tglMedidas" class="active" title="Linhas e valores de medida">Medidas</button>
-      <button id="tglMalha" title="Contornos anatômicos detalhados">Malha</button>
+    <div id="layerBar" hidden>
+      <button id="tglAreas" class="active">Áreas</button>
+      <button id="tglMedidas" class="active">Medidas</button>
+      <button id="tglMalha">Malha</button>
     </div>
 
-    <div class="controls" hidden id="ctrlBar">
-      <button id="btnFreeze">Congelar</button>
-      <button id="btnPhoto2">Foto…</button>
-      <button id="btnCam" hidden>Voltar à câmera</button>
+    <div id="dock" hidden>
+      <button class="btn" id="btnFreeze">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="5" x2="10" y2="19"/><line x1="14" y1="5" x2="14" y2="19"/></svg>
+        <span>Congelar</span></button>
+      <button class="btn" id="btnPhoto2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span>Foto…</span></button>
+      <button class="btn" id="btnCam" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <span>Câmera</span></button>
     </div>
     <input type="file" id="fileInput" accept="image/*" hidden>
   </section>
@@ -171,13 +333,13 @@
     <div>
       <h2 class="panel-h">Medidas por olho</h2>
       <div class="eyes">
-        <div class="eyecard" id="cardOD">
-          <h3>OD <small>seu olho direito</small></h3>
+        <div class="card eyecard" id="cardOD">
+          <h3><span class="eye-id">OD</span> <small>seu olho direito</small></h3>
           <div class="mrows"></div>
           <div class="chips"></div>
         </div>
-        <div class="eyecard" id="cardOE">
-          <h3>OE <small>seu olho esquerdo</small></h3>
+        <div class="card eyecard" id="cardOE">
+          <h3><span class="eye-id">OE</span> <small>seu olho esquerdo</small></h3>
           <div class="mrows"></div>
           <div class="chips"></div>
         </div>
@@ -186,15 +348,15 @@
 
     <div>
       <h2 class="panel-h">Impressão da triagem</h2>
-      <div id="impressao"><span class="none">Aguardando um rosto estável na câmera…</span></div>
+      <div class="card" id="impressao"><span class="none">Aguardando um rosto estável na câmera…</span></div>
     </div>
 
     <div>
       <h2 class="panel-h">Qualidade da captura</h2>
-      <div id="quality">—</div>
+      <div class="card" id="quality">—</div>
     </div>
 
-    <details>
+    <details class="card">
       <summary>O que significa cada medida?</summary>
       <dl>
         <dt>MRD-1 (margin reflex distance 1)</dt>
@@ -210,8 +372,8 @@
         avança sobre os cílios (&lt; 1,5 mm), é o sinal clássico de <strong>dermatocalásio</strong> —
         o excesso de pele tratado pela blefaroplastia superior.</dd>
         <dt>Margem → supercílio</dt>
-        <dd>Distância da borda palpebral ao supercílio, no eixo da pupila. Encurtada quando
-        há queda do supercílio (que "empurra" pele sobre o olho).</dd>
+        <dd>Distância da borda palpebral à fileira inferior de pontos do supercílio, no eixo
+        da pupila. Encurtada quando há queda do supercílio (que "empurra" pele sobre o olho).</dd>
         <dt>Tilt cantal</dt>
         <dd>Inclinação do eixo do olho (canto externo vs. interno). Levemente positivo
         (+2° a +8°) é o padrão estético; negativo dá aspecto de olhar "caído".</dd>
@@ -253,23 +415,28 @@ return exports; })();
 const $ = id => document.getElementById(id);
 const video = $('video'), overlay = $('overlay'), photoCanvas = $('photoCanvas');
 const ctx = overlay.getContext('2d');
-const bootlog = $('bootlog'), engineDot = $('engineDot'), engineTxt = $('engineTxt');
+const bootlog = $('bootlog'), bootfill = $('bootfill');
+const engineDot = $('engineDot'), engineTxt = $('engineTxt');
 const stageMsg = $('stageMsg'), welcome = $('welcome');
+const guide = $('guide'), stab = $('stab'), stabTxt = $('stabTxt');
+const stabFill = stab.querySelector('.fill');
 const btnStart = $('btnStart'), btnPhoto = $('btnPhoto'), btnPhoto2 = $('btnPhoto2');
 const btnFreeze = $('btnFreeze'), btnCam = $('btnCam'), fileInput = $('fileInput');
-const layerBar = $('layerBar'), ctrlBar = $('ctrlBar');
+const layerBar = $('layerBar'), dock = $('dock');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const layers = { areas:true, medidas:true, malha:false };
-$('tglAreas').onclick   = e => toggleLayer('areas', e.target);
-$('tglMedidas').onclick = e => toggleLayer('medidas', e.target);
-$('tglMalha').onclick   = e => toggleLayer('malha', e.target);
+$('tglAreas').onclick   = e => toggleLayer('areas', e.currentTarget);
+$('tglMedidas').onclick = e => toggleLayer('medidas', e.currentTarget);
+$('tglMalha').onclick   = e => toggleLayer('malha', e.currentTarget);
 function toggleLayer(k, el){ layers[k] = !layers[k]; el.classList.toggle('active', layers[k]); }
 
 function boot(msg, isErr){
-  bootlog.innerHTML += (bootlog.innerHTML==='preparando…' ? '' : '\n');
-  if (bootlog.innerHTML==='preparando…') bootlog.innerHTML='';
+  if (bootlog.textContent === 'preparando…') bootlog.innerHTML = '';
+  else bootlog.innerHTML += '\n';
   bootlog.innerHTML += isErr ? `<span class="err">${msg}</span>` : msg;
 }
+const bootProgress = p => { bootfill.style.width = p + '%'; };
 
 /* ---------------- descompactação dos payloads ---------------- */
 async function inflate(id){
@@ -288,9 +455,10 @@ const savedFactory = self.ModuleFactory;   // o runtime zera este global após o
 
 async function initEngine(){
   try{
-    boot('descompactando motor neural…');
+    boot('descompactando motor neural…'); bootProgress(12);
     const t0 = performance.now();
     const [wasmBytes, modelBytes] = await Promise.all([inflate('gzWasm'), inflate('gzModel')]);
+    bootProgress(55);
     boot(`motor ${(wasmBytes.length/1048576).toFixed(1)} MB + modelo ${(modelBytes.length/1048576).toFixed(1)} MB · ${((performance.now()-t0)/1000).toFixed(1)}s`);
 
     const make = async delegate => {
@@ -302,9 +470,11 @@ async function initEngine(){
           runningMode:'VIDEO', numFaces:1,
           outputFaceBlendshapes:true, outputFacialTransformationMatrixes:false });
     };
+    bootProgress(72);
     try { landmarker = await make('GPU'); delegateUsed = 'GPU'; }
     catch(e){ boot('GPU indisponível ('+(e.message||e)+'), usando CPU…'); landmarker = await make('CPU'); delegateUsed = 'CPU'; }
 
+    bootProgress(100);
     boot('pronto ✓ ('+delegateUsed+')');
     engineDot.classList.add('ready'); engineTxt.textContent = 'motor pronto · '+delegateUsed;
     btnStart.disabled = false; btnPhoto.disabled = false;
@@ -339,12 +509,12 @@ async function startCamera(){
     video.srcObject = stream;
     await video.play();
     mirrored = true;
-    video.classList.remove('unmirrored');
     video.style.display = 'block';
     welcome.style.display = 'none';
-    layerBar.hidden = false; ctrlBar.hidden = false;
+    layerBar.hidden = false; dock.hidden = false;
+    guide.hidden = false; guide.classList.remove('gone');
     btnCam.hidden = true; btnFreeze.hidden = false;
-    btnFreeze.textContent = 'Congelar'; btnFreeze.classList.remove('active');
+    setFreezeUi(false);
     mode = 'live';
     resetSmoothing();
     requestAnimationFrame(loop);
@@ -372,20 +542,13 @@ function showOpenTab(){
   if ($('btnNewTab')) return;
   /* âncora real: navegação por gesto do usuário passa onde window.open é bloqueado */
   const a = document.createElement('a');
-  a.id = 'btnNewTab';
+  a.id = 'btnNewTab'; a.className = 'btn primary';
   a.href = location.href; a.target = '_blank'; a.rel = 'noopener';
   a.textContent = 'Abrir em nova aba ↗';
-  a.style.cssText = 'display:inline-block;background:var(--accent);border:1px solid var(--accent);' +
-    'color:#04252B;font-weight:650;border-radius:.55rem;padding:.55rem 1.05rem;' +
-    'font-size:.86rem;text-decoration:none';
   btnStart.parentElement.insertBefore(a, btnStart);
-
-  /* endereço visível para copiar, caso até a âncora seja bloqueada */
   if (!$('copyUrl')){
     const p = document.createElement('p');
     p.id = 'copyUrl';
-    p.style.cssText = 'font-size:.72rem;color:var(--muted);max-width:34rem;word-break:break-all;' +
-      'user-select:all;border:1px dashed var(--line);border-radius:.5rem;padding:.45rem .6rem;margin:0';
     p.textContent = location.href;
     btnStart.parentElement.parentElement.insertBefore(p, btnStart.parentElement.nextSibling);
   }
@@ -394,6 +557,14 @@ function showOpenTab(){
 function stopCamera(){
   if (stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
   video.srcObject = null; video.style.display = 'none';
+}
+
+function setFreezeUi(frozen){
+  btnFreeze.classList.toggle('armed', frozen);
+  btnFreeze.querySelector('span').textContent = frozen ? 'Retomar' : 'Congelar';
+  btnFreeze.querySelector('svg').innerHTML = frozen
+    ? '<path d="M6 4l14 8-14 8V4z" fill="currentColor" stroke="none"/>'
+    : '<line x1="10" y1="5" x2="10" y2="19"/><line x1="14" y1="5" x2="14" y2="19"/>';
 }
 
 function loadPhoto(file){
@@ -407,7 +578,8 @@ function loadPhoto(file){
     stopCamera();
     mirrored = false;
     welcome.style.display = 'none';
-    layerBar.hidden = false; ctrlBar.hidden = false;
+    layerBar.hidden = false; dock.hidden = false;
+    guide.hidden = true; stab.hidden = true;
     btnCam.hidden = false; btnFreeze.hidden = true;
     mode = 'photo';
     resetSmoothing();
@@ -424,8 +596,8 @@ btnPhoto.onclick = () => fileInput.click();
 btnPhoto2.onclick = () => fileInput.click();
 fileInput.onchange = () => { if (fileInput.files[0]) loadPhoto(fileInput.files[0]); fileInput.value=''; };
 btnFreeze.onclick = () => {
-  if (mode === 'live'){ mode = 'frozen'; video.pause(); btnFreeze.textContent='Retomar'; btnFreeze.classList.add('active'); }
-  else if (mode === 'frozen'){ mode = 'live'; video.play(); btnFreeze.textContent='Congelar'; btnFreeze.classList.remove('active'); requestAnimationFrame(loop); }
+  if (mode === 'live'){ mode = 'frozen'; video.pause(); setFreezeUi(true); }
+  else if (mode === 'frozen'){ mode = 'live'; video.play(); setFreezeUi(false); requestAnimationFrame(loop); }
 };
 
 /* ---------------- índices anatômicos (FaceMesh 478) ---------------- */
@@ -595,37 +767,99 @@ function gTilt(v){
   if (v >= -2.5) return ['warn','neutro'];
   return ['alert','negativo'];
 }
-const sevColor = { ok:'#46C08A', warn:'#E3B23C', alert:'#E2604F' };
+const sevColor = { ok:'#4ADE97', warn:'#F2C14E', alert:'#F0655E' };
+const ACCENT = '#6EE3F0', ACCENT_DIM = '#9AB6C4', IRIS_COL = '#CDEFF5';
 
-/* ---------------- painel ---------------- */
+/* ---------------- painel: medidores ---------------- */
 const fmt = (v,d=1) => v==null ? '—' : v.toFixed(d).replace('.',',');
-const ROWS = [
-  ['MRD-1','mrd1',v=>gMRD1(v),'mm'],
-  ['MRD-2','mrd2',v=>gMRD2(v),'mm'],
-  ['Fenda palpebral','pfh',v=>['','' ],'mm'],
-  ['Exposição pré-tarsal','pretarsal',v=>gPretarsal(v),'mm'],
-  ['Margem → supercílio','brow',v=>gBrow(v),'mm'],
-  ['Tilt cantal','tilt',v=>gTilt(v),'°'],
+const METRICS = [
+  {key:'mrd1', lbl:'MRD-1', unit:'mm', grade:gMRD1, lo:0, hi:6.5,
+   zones:[[0,1.9,'alert'],[1.9,3.9,'warn'],[3.9,5.85,'ok'],[5.85,6.5,'alert']]},
+  {key:'mrd2', lbl:'MRD-2', unit:'mm', grade:gMRD2, lo:0, hi:8,
+   zones:[[0,3.8,'warn'],[3.8,6.6,'ok'],[6.6,8,'alert']]},
+  {key:'pfh', lbl:'Fenda palpebral', unit:'mm', grade:null, lo:4, hi:14,
+   zones:[[4,7,'warn'],[7,12,'ok'],[12,14,'warn']]},
+  {key:'pretarsal', lbl:'Exposição pré-tarsal', unit:'mm', grade:gPretarsal, lo:0, hi:6,
+   zones:[[0,1.4,'alert'],[1.4,2.4,'warn'],[2.4,6,'ok']]},
+  {key:'brow', lbl:'Margem → supercílio', unit:'mm', grade:gBrow, lo:0, hi:14,
+   zones:[[0,6.5,'alert'],[6.5,8,'warn'],[8,14,'ok']]},
+  {key:'tilt', lbl:'Tilt cantal', unit:'°', grade:gTilt, lo:-8, hi:14,
+   zones:[[-8,-2.5,'alert'],[-2.5,0,'warn'],[0,11,'ok'],[11,14,'warn']]},
 ];
 
-function renderEyeCard(cardId, m){
-  const card = $(cardId);
-  const rowsEl = card.querySelector('.mrows');
-  const chipsEl = card.querySelector('.chips');
-  let html = '';
+function zoneGradient(mt){
+  const span = mt.hi - mt.lo;
+  const stops = [];
+  for (const [a,b,sev] of mt.zones){
+    const p1 = ((a-mt.lo)/span*100).toFixed(1), p2 = ((b-mt.lo)/span*100).toFixed(1);
+    stops.push(`${sevColor[sev]} ${p1}% ${p2}%`);
+  }
+  return `linear-gradient(90deg, ${stops.join(', ')})`;
+}
+
+const cardRefs = {};   // { OD: {mrd1:{valEl,needleEl}, …}, OE: {…} }
+function buildEyeCards(){
+  for (const [eye, cardId] of [['OD','cardOD'],['OE','cardOE']]){
+    const rowsEl = $(cardId).querySelector('.mrows');
+    cardRefs[eye] = {};
+    for (const mt of METRICS){
+      const row = document.createElement('div');
+      row.className = 'mrow';
+      row.innerHTML =
+        `<div class="mtop"><span class="lbl">${mt.lbl}</span>` +
+        `<span class="val na">— <small>${mt.unit}</small></span></div>` +
+        `<div class="gauge"><div class="track" style="background:${zoneGradient(mt)}"></div>` +
+        `<div class="needle off"></div></div>`;
+      rowsEl.appendChild(row);
+      cardRefs[eye][mt.key] = {
+        valEl: row.querySelector('.val'),
+        needleEl: row.querySelector('.needle'),
+      };
+    }
+  }
+}
+
+/* transição numérica suave */
+const tweens = new Map();
+function setVal(el, target, unit){
+  const from = tweens.has(el) ? tweens.get(el).v : target;
+  if (reduceMotion || !isFinite(from)){
+    el.innerHTML = `${fmt(target)} <small>${unit}</small>`;
+    tweens.set(el, {v:target});
+    return;
+  }
+  const t0 = performance.now(), dur = 260;
+  const step = now => {
+    const t = Math.min(1, (now-t0)/dur), e = 1-Math.pow(1-t,3);
+    const v = from + (target-from)*e;
+    el.innerHTML = `${fmt(v)} <small>${unit}</small>`;
+    tweens.set(el, {v});
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function renderEyeCard(eye, m){
+  const chipsEl = $(eye==='OD'?'cardOD':'cardOE').querySelector('.chips');
   const chips = [];
-  for (const [lbl, k, grade, unit] of ROWS){
+  for (const mt of METRICS){
+    const ref = cardRefs[eye][mt.key];
     if (m == null){
-      html += `<div class="mrow"><span class="lbl">${lbl}</span><span class="val na">—</span></div>`;
+      ref.valEl.className = 'val na';
+      ref.valEl.innerHTML = `— <small>${mt.unit}</small>`;
+      ref.needleEl.classList.add('off');
+      tweens.delete(ref.valEl);
       continue;
     }
-    const v = m[k];
-    const [sev, txt] = grade(v);
-    const cls = sev || '';
-    html += `<div class="mrow"><span class="lbl">${lbl}</span><span class="val ${cls}">${fmt(v)} ${unit}</span></div>`;
+    const v = m[mt.key];
+    const [sev, txt] = mt.grade ? mt.grade(v) : ['',''];
+    ref.valEl.className = 'val ' + (sev||'');
+    setVal(ref.valEl, v, mt.unit);
+    const pct = Math.max(0, Math.min(100, (v-mt.lo)/(mt.hi-mt.lo)*100));
+    ref.needleEl.style.left = pct + '%';
+    ref.needleEl.classList.remove('off');
     if (sev && sev !== 'ok' && txt) chips.push([sev, txt]);
   }
-  rowsEl.innerHTML = html;
   chipsEl.innerHTML = m == null ? '' :
     (chips.length ? chips.map(([s,t])=>`<span class="chip ${s}">${t}</span>`).join('')
                   : '<span class="chip ok">sem alterações</span>');
@@ -635,47 +869,68 @@ function renderImpressao(sm){
   const el = $('impressao');
   if (!sm){ el.innerHTML = '<span class="none">Aguardando um rosto estável na câmera…</span>'; return; }
   const { OD, OE } = sm.eyes;
-  const items = [];
+  const items = [];   // [sev, html]
 
   for (const [eye, m] of [['OD',OD],['OE',OE]]){
     const [sev, txt] = gMRD1(m.mrd1);
     if (sev !== 'ok')
-      items.push(`<b>${eye}:</b> MRD-1 de ${fmt(m.mrd1)} mm — compatível com <b>${txt}</b>. Vale avaliação oculoplástica (inclui teste de função do levantador, que exige exame presencial).`);
+      items.push([sev, `<b>${eye}:</b> MRD-1 de ${fmt(m.mrd1)} mm — compatível com <b>${txt}</b>. Vale avaliação oculoplástica (inclui teste de função do levantador, que exige exame presencial).`]);
   }
   const asym = Math.abs(OD.mrd1 - OE.mrd1);
   if (asym > 1.0)
-    items.push(`Assimetria de altura palpebral de ${fmt(asym)} mm entre os olhos — perceptível esteticamente; assimetrias novas merecem avaliação médica.`);
+    items.push(['warn', `Assimetria de altura palpebral de ${fmt(asym)} mm entre os olhos — perceptível esteticamente; assimetrias novas merecem avaliação médica.`]);
 
   for (const [eye, m] of [['OD',OD],['OE',OE]]){
-    const [sev, txt] = gPretarsal(m.pretarsal);
+    const [sev] = gPretarsal(m.pretarsal);
     const [sevB] = gBrow(m.brow);
     if (sev === 'alert')
-      items.push(`<b>${eye}:</b> a dobra de pele encobre a faixa pré-tarsal (${fmt(m.pretarsal)} mm visível) — achado típico de <b>dermatocalásio</b>, o principal motivo de <b>blefaroplastia superior</b>.${sevB!=='ok' ? ' Há também posição baixa do supercílio, que contribui para o excesso aparente (às vezes o tratamento é do supercílio, não da pálpebra).' : ''}`);
+      items.push(['alert', `<b>${eye}:</b> a dobra de pele encobre a faixa pré-tarsal (${fmt(m.pretarsal)} mm visível) — achado típico de <b>dermatocalásio</b>, o principal motivo de <b>blefaroplastia superior</b>.${sevB!=='ok' ? ' Há também posição baixa do supercílio, que contribui para o excesso aparente (às vezes o tratamento é do supercílio, não da pálpebra).' : ''}`]);
     else if (sev === 'warn')
-      items.push(`<b>${eye}:</b> exposição pré-tarsal reduzida (${fmt(m.pretarsal)} mm) — dobra de pele baixa; um dermatocalásio inicial pode se comportar assim.`);
+      items.push(['warn', `<b>${eye}:</b> exposição pré-tarsal reduzida (${fmt(m.pretarsal)} mm) — dobra de pele baixa; um dermatocalásio inicial pode se comportar assim.`]);
   }
   for (const [eye, m] of [['OD',OD],['OE',OE]]){
     if (m.ssInf > 0.4)
-      items.push(`<b>${eye}:</b> esclera visível abaixo da íris (~${fmt(m.ssInf)} mm) — pode indicar retração da pálpebra inferior ou proeminência ocular.`);
+      items.push(['warn', `<b>${eye}:</b> esclera visível abaixo da íris (~${fmt(m.ssInf)} mm) — pode indicar retração da pálpebra inferior ou proeminência ocular.`]);
     const [sevT] = gTilt(m.tilt);
     if (sevT === 'alert')
-      items.push(`<b>${eye}:</b> tilt cantal negativo (${fmt(m.tilt)}°) — característica estética, não doença; relevante em planejamento de cantopexia.`);
+      items.push(['warn', `<b>${eye}:</b> tilt cantal negativo (${fmt(m.tilt)}°) — característica estética, não doença; relevante em planejamento de cantopexia.`]);
   }
 
   el.innerHTML = items.length
-    ? `<ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul>`
+    ? `<ul>${items.map(([s,h],i)=>`<li style="--i:${i};--sev:${sevColor[s]}">${h}</li>`).join('')}</ul>`
     : 'Nenhum sinal de ptose, dermatocalásio ou retração nos limiares desta triagem. 🙂';
 }
 
 function renderQuality(m, issues, sm){
   $('quality').innerHTML =
-    `Escala: <b>${m ? (m.pxPerMm).toFixed(1) : '—'}</b> px/mm · íris <b>${m ? m.irisPx.toFixed(0) : '—'}</b> px · ` +
+    `Escala <b>${m ? (m.pxPerMm).toFixed(1) : '—'}</b> px/mm · íris <b>${m ? m.irisPx.toFixed(0) : '—'}</b> px · ` +
     `inclinação <b>${m ? m.rollDeg.toFixed(1)+'°' : '—'}</b> · amostras <b>${sm ? sm.n : 0}/${BUF}</b>` +
-    (issues && issues.length ? `<br>⚠ ${issues.join(' · ')}` : '');
+    (issues && issues.length ? `<br><span class="qwarn">⚠ ${issues.join(' · ')}</span>` : '');
+}
+
+function renderStab(sm, faceOk){
+  if (mode !== 'live' && mode !== 'frozen'){ stab.hidden = true; return; }
+  stab.hidden = !faceOk;
+  if (!faceOk) return;
+  const n = sm ? sm.n : 0;
+  const C = 50.27;
+  stabFill.style.strokeDashoffset = (C * (1 - n/BUF)).toFixed(2);
+  if (n >= BUF){ stab.classList.add('done'); stabTxt.textContent = 'medidas consolidadas'; }
+  else { stab.classList.remove('done'); stabTxt.textContent = `consolidando ${n}/${BUF}`; }
+}
+
+function renderGuide(issues, sm, faceOk){
+  if (mode !== 'live'){ guide.hidden = true; return; }
+  guide.hidden = false;
+  const locked = faceOk && (!issues || !issues.length);
+  guide.classList.toggle('ok', locked);
+  guide.classList.toggle('gone', locked && sm && sm.n >= BUF);
 }
 
 /* ---------------- pintura ---------------- */
-function draw(lm, W, H, sm, live){
+const MONO_FONT = '"Geist Mono", ui-monospace, monospace';
+
+function draw(lm, W, H, sm){
   overlay.width = W; overlay.height = H;
   ctx.clearRect(0,0,W,H);
   const MX = p => mirrored ? { x: W - p.x, y: p.y } : p;
@@ -683,11 +938,12 @@ function draw(lm, W, H, sm, live){
   const lw = Math.max(1.2, W/640);
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
-  const poly = (idx, close) => {
+  const poly = idx => {
     ctx.beginPath();
     idx.forEach((i,k)=>{ const p = P(i); k? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y); });
-    if (close) ctx.closePath();
   };
+  const glow = (col, blur) => { ctx.shadowColor = col; ctx.shadowBlur = blur; };
+  const noGlow = () => { ctx.shadowBlur = 0; };
 
   for (const [key, E] of Object.entries(EYES)){
     const m = sm ? sm.eyes[key] : null;
@@ -700,18 +956,20 @@ function draw(lm, W, H, sm, live){
       E.upper.forEach((i,k)=>{ const p=P(i); k? ctx.lineTo(p.x,p.y): ctx.moveTo(p.x,p.y); });
       [...E.fold].reverse().forEach(i=>{ const p=P(i); ctx.lineTo(p.x,p.y); });
       ctx.closePath();
-      ctx.fillStyle = col + '38'; ctx.fill();
-      ctx.strokeStyle = col + 'AA'; ctx.lineWidth = lw*0.8; ctx.stroke();
+      ctx.fillStyle = col + '30'; ctx.fill();
+      ctx.strokeStyle = col + '90'; ctx.lineWidth = lw*0.8; ctx.stroke();
     }
 
     /* --- contornos anatômicos --- */
-    ctx.strokeStyle = '#43C6D8'; ctx.lineWidth = lw*1.4;
+    glow(ACCENT, 6*lw);
+    ctx.strokeStyle = ACCENT; ctx.lineWidth = lw*1.3;
     poly(E.upper); ctx.stroke();
-    ctx.strokeStyle = '#43C6D899'; ctx.lineWidth = lw;
+    ctx.strokeStyle = ACCENT + '99'; ctx.lineWidth = lw*0.9;
     poly(E.lower); ctx.stroke();
+    noGlow();
     if (layers.malha){
       ctx.setLineDash([4*lw,3*lw]);
-      ctx.strokeStyle = '#9AB6C480'; ctx.lineWidth = lw*0.8;
+      ctx.strokeStyle = ACCENT_DIM + '70'; ctx.lineWidth = lw*0.8;
       poly(E.fold); ctx.stroke();
       poly(E.browLow); ctx.stroke();
       ctx.setLineDash([]);
@@ -720,10 +978,14 @@ function draw(lm, W, H, sm, live){
     /* --- íris + pupila --- */
     const c = P(E.irisC);
     const r = dist(P(E.irisH[0]), P(E.irisH[1]))/2;
-    ctx.strokeStyle = '#B7E3EC'; ctx.lineWidth = lw*0.9;
+    ctx.strokeStyle = IRIS_COL; ctx.lineWidth = lw*0.85;
+    ctx.setLineDash([3*lw, 2.2*lw]);
     ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, 7); ctx.stroke();
-    ctx.beginPath(); ctx.arc(c.x, c.y, lw*1.6, 0, 7);
-    ctx.fillStyle = '#B7E3EC'; ctx.fill();
+    ctx.setLineDash([]);
+    glow(IRIS_COL, 5*lw);
+    ctx.beginPath(); ctx.arc(c.x, c.y, lw*1.5, 0, 7);
+    ctx.fillStyle = IRIS_COL; ctx.fill();
+    noGlow();
 
     /* --- linhas de medida MRD1/MRD2 --- */
     if (layers.medidas && m){
@@ -732,37 +994,36 @@ function draw(lm, W, H, sm, live){
       const [s1] = gMRD1(m.mrd1);
       seg(c.x, c.y, c.x, upY, sevColor[s1], lw);
       label(`MRD1 ${fmt(m.mrd1)}`, c.x + r + 6*lw, (c.y+upY)/2, sevColor[s1], lw, W);
-      seg(c.x, c.y, c.x, loY, '#8FA6B3', lw*0.8);
+      seg(c.x, c.y, c.x, loY, ACCENT_DIM, lw*0.75);
 
       /* rótulo do olho */
-      label(key, c.x - r, upY - 26*lw, '#43C6D8', lw, W, true);
+      label(key, c.x - r, upY - 26*lw, ACCENT, lw, W, true);
     }
   }
-
-  /* mensagem de orientação ao vivo */
-  if (live && !sm) return;   // instruções ficam no stageMsg
 }
 
 function seg(x1,y1,x2,y2,col,w){
-  ctx.strokeStyle = col; ctx.lineWidth = w*1.3;
+  ctx.strokeStyle = col; ctx.lineWidth = w*1.25;
   ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
   for (const y of [y1,y2]){
-    ctx.beginPath(); ctx.moveTo(x1-4*w, y); ctx.lineTo(x1+4*w, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1-3.5*w, y); ctx.lineTo(x1+3.5*w, y); ctx.stroke();
   }
 }
 function label(txt, x, y, col, w, W, plain){
-  const fs = Math.max(11, 12*w);
-  ctx.font = `600 ${fs}px system-ui, sans-serif`;
+  const fs = Math.max(11, 11.5*w);
+  ctx.font = `600 ${fs}px ${MONO_FONT}`;
   const tw = ctx.measureText(txt).width;
-  x = Math.min(Math.max(4, x), W - tw - 10);
+  x = Math.min(Math.max(4, x), W - tw - 12);
   if (!plain){
-    ctx.fillStyle = 'rgba(8,12,16,.78)';
+    ctx.fillStyle = 'rgba(7,11,14,.78)';
+    ctx.strokeStyle = col + '55';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(x-4, y-fs, tw+10, fs+7, 4);
-    ctx.fill();
+    ctx.roundRect(x-5, y-fs, tw+12, fs+8, 6);
+    ctx.fill(); ctx.stroke();
   }
   ctx.fillStyle = col;
-  ctx.fillText(txt, x, y);
+  ctx.fillText(txt, x+1, y+1);
 }
 
 /* ---------------- laços de análise ---------------- */
@@ -774,8 +1035,9 @@ function processFrame(source, W, H, live){
   const res = landmarker.detectForVideo(source, ts);
   if (!res.faceLandmarks || !res.faceLandmarks.length){
     overlay.width = W; overlay.height = H; ctx.clearRect(0,0,W,H);
-    renderEyeCard('cardOD', null); renderEyeCard('cardOE', null);
+    renderEyeCard('OD', null); renderEyeCard('OE', null);
     renderImpressao(null); renderQuality(null, null, null);
+    renderStab(null, false); renderGuide(null, null, false);
     showMsg(live ? 'Procurando rosto… posicione-se de frente, com boa luz.' : 'Nenhum rosto encontrado na foto.');
     if (live) resetSmoothing();
     return;
@@ -794,11 +1056,13 @@ function processFrame(source, W, H, live){
   }
 
   const sm = smoothed();
-  draw(lm, W, H, sm, live);
-  renderEyeCard('cardOD', sm && sm.eyes.OD);
-  renderEyeCard('cardOE', sm && sm.eyes.OE);
+  draw(lm, W, H, sm);
+  renderEyeCard('OD', sm && sm.eyes.OD);
+  renderEyeCard('OE', sm && sm.eyes.OE);
   renderImpressao(sm && sm.n >= (live? 8 : 1) ? sm : null);
   renderQuality(m, issues, sm);
+  renderStab(sm, live);
+  renderGuide(issues, sm, true);
 }
 
 function loop(){
@@ -812,7 +1076,6 @@ function loop(){
 }
 
 function analyzePhoto(){
-  /* exibe a foto no lugar do vídeo usando o próprio overlay como fundo */
   const W = photoCanvas.width, H = photoCanvas.height;
   overlay.width = W; overlay.height = H;
   try { processFrame(photoCanvas, W, H, false); }
@@ -826,6 +1089,7 @@ function analyzePhoto(){
   ctx.drawImage(painted, 0, 0);
 }
 
+buildEyeCards();
 initEngine();
 })();
 </script>

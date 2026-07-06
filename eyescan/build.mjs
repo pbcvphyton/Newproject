@@ -26,8 +26,26 @@ for (const f of needed){
 
 const gzb64 = f => gzipSync(readFileSync(A(f)), { level: 9 }).toString('base64');
 
+/* fontes (committadas em src/fonts, licença OFL) → @font-face com data URI */
+const FONTS = [
+  ['Instrument Serif', 400, 'normal', 'instrument-serif-latin-400-normal.woff2'],
+  ['Instrument Serif', 400, 'italic', 'instrument-serif-latin-400-italic.woff2'],
+  ['Geist',      400, 'normal', 'geist-sans-latin-400-normal.woff2'],
+  ['Geist',      500, 'normal', 'geist-sans-latin-500-normal.woff2'],
+  ['Geist',      600, 'normal', 'geist-sans-latin-600-normal.woff2'],
+  ['Geist',      700, 'normal', 'geist-sans-latin-700-normal.woff2'],
+  ['Geist Mono', 500, 'normal', 'geist-mono-latin-500-normal.woff2'],
+  ['Geist Mono', 600, 'normal', 'geist-mono-latin-600-normal.woff2'],
+];
+const fontsCss = FONTS.map(([fam, w, style, file]) => {
+  const b64 = readFileSync(join(root, 'src', 'fonts', file)).toString('base64');
+  return `@font-face{font-family:'${fam}';font-style:${style};font-weight:${w};` +
+         `src:url(data:font/woff2;base64,${b64}) format('woff2');font-display:swap}`;
+}).join('\n');
+
 let html = readFileSync(join(root, 'src', 'app.template.html'), 'utf8');
 html = html
+  .replace('/*__FONTS_CSS__*/', () => fontsCss)
   .replace('__B64GZ_WASM__',  () => gzb64('vision_wasm_internal.wasm'))
   .replace('__B64GZ_MODEL__', () => gzb64('face_landmarker.task'))
   .replace('__WASM_LOADER_JS__',    () => readFileSync(A('vision_wasm_internal.js'), 'utf8'))
